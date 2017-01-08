@@ -1,0 +1,6 @@
+[package]
+name = "model06"
+version = "0.1.0"
+authors = ["Shisei Hanai <ruimo.uno@gmail.com>"]
+
+[dependencies]
