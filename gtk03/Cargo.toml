@@ -1,0 +1,10 @@
+[package]
+name = "gtk03"
+version = "0.1.0"
+authors = ["Shisei Hanai <ruimo.uno@gmail.com>"]
+
+[dependencies]
+gtk = "^0"
+
+[features]
+default = ["gtk/v3_18"]

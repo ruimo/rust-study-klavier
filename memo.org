@@ -463,4 +463,235 @@ impl<T> Widget for T where T: HasWidget { // (1)
 
 結局、開始点でソートしたレポジトリと、終了点でソートしたレポジトリを持てば良い。縦方向については広さが限られているので、対象を絞ったりせずに全てを描画してしまえば良い。
 
-ソートシタ
+* GTK
+
+sudo apt-get install libperl-dev
+sudo apt-get install libgtk2.0-dev
+
+sudo apt-get install libgtk-3-dev
+
+cargo newでプロジェクトを作った後、Cargo.tomlを編集
+
+[dependencies]
+gtk = "^0"
+
+[features]
+default = ["gtk/v3_18"]
+
+featuresのところは、以下で確認しておく。
+
+$ dpkg -l | grep libgtk-3-dev
+ii  libgtk-3-dev:amd64                          3.18.9-1ubuntu3.1                             amd64        development files for the GTK+ library
+
+src/main.rsを作成。
+
+extern crate gtk;
+
+use gtk::prelude::*;
+
+fn main() {
+    gtk::init().expect("Failed to initialize GTK.");
+
+    let window = gtk::Window::new(gtk::WindowType::Toplevel);
+
+    window.set_title("Hello, World");
+    window.show_all();
+    
+    gtk::main();
+}
+
+cargo runでウィンドウが表示される。
+
+** Glade
+
+*** ボタンとラベル(gtk01)
+
+sudo apt install glade
+
+Gladeを起動。ウィンドウをクリックし、IDのところにmainWindowsと入力。
+gridを指定して、列2を2、行を1にする(どうも、行と列の訳が逆っぽい)
+グリッドの上にボタンを設定(button1)
+グリッドの下にラベルを設定(label1)
+
+名前を付けて保存で、src/resource/mainWindowという名前で保存。
+
+src/main.rsは以下のようにして読み込む。
+
+extern crate gtk;
+
+use gtk::prelude::*;
+
+fn main() {
+    gtk::init().expect("Failed to initialize GTK.");
+
+    let ui = include_str!("resources/mainWindow.glade");
+    let builder = gtk::Builder::new_from_string(ui);
+    
+    let window1 : gtk::Window = builder.get_object("mainWindow").unwrap();
+    window1.connect_delete_event(move |_, _| {
+        gtk::main_quit();
+        Inhibit(false)
+    });
+
+    window1.show_all();
+    
+    gtk::main();
+}
+
+これで、ボタンとラベルが表示される。
+ボタンとラベルをプログラムからアクセスするには以下のようにする。
+
+extern crate gtk;
+
+use gtk::prelude::*;
+
+fn main() {
+    gtk::init().expect("Failed to initialize GTK.");
+
+    let ui = include_str!("resources/mainWindow.glade");
+    let builder = gtk::Builder::new_from_string(ui);
+    
+    let window1 : gtk::Window = builder.get_object("mainWindow").unwrap();
+    window1.connect_delete_event(move |_, _| {
+        gtk::main_quit();
+        Inhibit(false)
+    });
+
+    let button: gtk::Button = builder.get_object("button1").unwrap();
+    let label: gtk::Label = builder.get_object("label1").unwrap();
+
+    button.connect_clicked(move |_| {
+        label.set_label("Clicked!");
+    });
+
+    window1.show_all();
+    gtk::main();
+}
+
+*** 描画領域(gtk02)
+
+DrawingAreaを使ってみる。ボタンとラベルのラベルの部分に、描画領域を指定。
+イベントで何らかのステートを変更したい場合、以下のようなコードではコンパイルできない。
+
+struct Color {
+    red: u8,
+    green: u8,
+    blue: u8
+}
+
+fn main() {
+..
+    let mut color = Color {
+        red: 0, green: 0, blue: 255
+    };
+
+    da.connect_draw(|widget, context| {
+        println!("draw({}, {}) called.", widget.get_allocated_width(), widget.get_allocated_height());
+        context.move_to(0f64, 0f64);
+        context.set_line_width(10f64);
+        context.set_source_rgb(f64::from(color.red) / 255.0, f64::from(color.green) / 255.0, f64::from(color.blue) / 255.0);
+        context.line_to(100f64, 100f64);
+        context.stroke();
+        return Inhibit(false);
+    });
+}
+
+クロージャでcolorをborrowしているが、このクロージャがいつまで生存するのかrustコンパイラには分からない。このため、main()を抜けた後も残るかもしれないと判定される。
+
+$ cargo run
+   Compiling gtk02 v0.1.0 (file:///home/shanai/rust/rust-study-klavier/gtk02)
+error[E0373]: closure may outlive the current function, but it borrows `color`, which is owned by the current function
+  --> src/main.rs:36:25
+   |
+36 |         da.connect_draw(|widget, context| {
+   |                         ^^^^^^^^^^^^^^^^^ may outlive borrowed value `color`
+...
+40 |             context.set_source_rgb(f64::from(color.red) / 255.0, f64::from(color.green) / 255.0, f64::from(color.blue) / 255.0);
+   |                                              ----- `color` is borrowed here
+   |
+help: to force the closure to take ownership of `color` (and any other referenced variables), use the `move` keyword, as shown:
+   |         da.connect_draw(move |widget, context| {
+
+error: aborting due to previous error
+
+error: Could not compile `gtk02`.
+
+To learn more, run the command again with --verbose.
+
+Rc/RefCellで解決できる。
+
+extern crate gtk;
+
+use std::cell::RefCell;
+use gtk::prelude::*;
+use std::rc::Rc;
+
+struct Color {
+    red: u8,
+    green: u8,
+    blue: u8
+}
+
+impl Color {
+    fn set_color(&mut self, new_color: Color) {
+        *self = new_color;
+    }
+}
+
+struct WindowState {
+    drawingArea: gtk::DrawingArea,
+    color: RefCell<Color>
+}
+
+fn main() {
+    gtk::init().expect("Failed to initialize GTK.");
+
+    let ui = include_str!("resources/mainWindow.glade");
+    let builder = gtk::Builder::new_from_string(ui);
+    let window1 : gtk::Window = builder.get_object("mainWindow").unwrap();
+
+    window1.connect_delete_event(move |_, _| {
+        gtk::main_quit();
+        Inhibit(false)
+    });
+
+    let button: gtk::Button = builder.get_object("button1").unwrap();
+    let windowState = Rc::new(
+        WindowState {
+            drawingArea: builder.get_object("drawingarea1").unwrap(),
+            color: RefCell::new(
+                Color { red: 0, green: 0, blue: 255 }
+            )
+        }
+    );
+
+    {
+        let ws = windowState.clone();
+        button.connect_clicked(move |_| {
+            ws.color.borrow_mut().set_color(Color { red: 255, green: 0, blue: 0 });
+            ws.drawingArea.queue_draw();
+        });
+    }
+
+    {
+        let ws = windowState.clone();
+        windowState.drawingArea.connect_draw(move |widget, context| {
+            println!("draw({}, {}) called.", widget.get_allocated_width(), widget.get_allocated_height());
+            let color = ws.color.borrow();
+            context.move_to(0f64, 0f64);
+            context.set_line_width(10f64);
+            context.set_source_rgb(f64::from(color.red) / 255.0, f64::from(color.green) / 255.0, f64::from(color.blue) / 255.0);
+            context.line_to(100f64, 100f64);
+            context.stroke();
+            return Inhibit(false);
+        });
+    }
+
+    window1.show_all();
+    gtk::main();
+}
+
+*** スクロール(gtk03)
+
+スクロールするには、GladeでScrolledWindowの中にViewportを置き、その中にDrawingAreaを置けば良い。コードは何も変えなくて良い。
+
