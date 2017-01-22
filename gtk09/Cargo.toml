@@ -1,0 +1,14 @@
+[package]
+name = "gtk09"
+version = "0.1.0"
+authors = ["Shisei Hanai <ruimo.uno@gmail.com>"]
+
+[dependencies]
+gdk = "^0"
+gtk = "^0"
+gdk-pixbuf = "^0"
+cairo-rs = "^0"
+gdk-sys = "^0"
+
+[features]
+default = ["gtk/v3_18"]
