@@ -42,7 +42,7 @@ fn to_red(pixbuf: &Pixbuf) {
             let b = buf[offset + 2];
             let a = buf[offset + 3];
             if r == 0 && g == 0 && b == 0 {
-                pixbuf.put_pixel(x, y, 255, 0, 0, a);
+                buf[offset] = 255;
             }
         }
     }

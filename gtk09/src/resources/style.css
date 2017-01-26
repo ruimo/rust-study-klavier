@@ -1,0 +1,11 @@
+GtkLabel {
+    padding: 3px;
+}
+
+#titleLabel {
+    border: inset 2px;
+}
+
+.name {
+    border: solid 1px;
+}
