@@ -5,78 +5,34 @@
   <object class="GtkWindow" id="mainWindow">
     <property name="can_focus">False</property>
     <child>
-      <object class="GtkGrid" id="grid1">
+      <object class="GtkPaned" id="paned1">
         <property name="visible">True</property>
-        <property name="can_focus">False</property>
-        <property name="hexpand">True</property>
+        <property name="can_focus">True</property>
+        <property name="orientation">vertical</property>
+        <property name="position">5</property>
         <child>
-          <object class="GtkLabel" id="label1">
-            <property name="name">name01</property>
+          <object class="GtkScrolledWindow" id="scrolledwindow1">
             <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="hexpand">True</property>
-            <property name="label" translatable="yes">label</property>
-            <style>
-              <class name="name"/>
-            </style>
+            <property name="can_focus">True</property>
+            <property name="shadow_type">in</property>
+            <property name="overlay_scrolling">False</property>
+            <child>
+              <object class="GtkViewport" id="viewport1">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <child>
+                  <object class="GtkDrawingArea" id="drawingarea1">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                  </object>
+                </child>
+              </object>
+            </child>
           </object>
           <packing>
-            <property name="left_attach">0</property>
-            <property name="top_attach">1</property>
+            <property name="resize">True</property>
+            <property name="shrink">False</property>
           </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="label2">
-            <property name="name">titleLabel</property>
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="hexpand">True</property>
-            <property name="label" translatable="yes">label</property>
-            <style>
-              <class name="title"/>
-            </style>
-          </object>
-          <packing>
-            <property name="left_attach">0</property>
-            <property name="top_attach">0</property>
-          </packing>
-        </child>
-        <child>
-          <object class="GtkLabel" id="label3">
-            <property name="name">name02</property>
-            <property name="visible">True</property>
-            <property name="can_focus">False</property>
-            <property name="hexpand">True</property>
-            <property name="label" translatable="yes">label</property>
-            <style>
-              <class name="name"/>
-            </style>
-          </object>
-          <packing>
-            <property name="left_attach">0</property>
-            <property name="top_attach">2</property>
-          </packing>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
-        </child>
-        <child>
-          <placeholder/>
         </child>
       </object>
     </child>
