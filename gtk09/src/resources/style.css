@@ -4,6 +4,7 @@ GtkLabel {
 
 #titleLabel {
     border: inset 2px;
+    background-color: red;
 }
 
 .name {
